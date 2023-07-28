@@ -69,12 +69,8 @@ MySQL.ready(function()
             `pound` tinyint(1) DEFAULT 0,
             PRIMARY KEY (`id`)
           );]]
-
-
-
     local createDatabase = MySQL.insert.await(query)
-    print(json.encode(createDatabase))
-    if createDatabase >= 1 then
+    if #createDatabase >= 1 then
         print("^3 [Mono_Garage]: ¡Database Created!")
     end
 end)

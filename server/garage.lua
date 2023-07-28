@@ -118,13 +118,14 @@ lib.callback.register('mono_garage:GetVehicleCoords', function(source, plate1)
             if pos == nil then
                 local allVeh = GetAllVehicles()
                 for i = 1, #allVeh do
-                    local plate = GetVehicleNumberPlateText(allVeh[i])
+                    local el = allVeh[i]
+                    local plate = GetVehicleNumberPlateText(el)
                     if SP(plate) == plate1 then
-                        return GetEntityCoords(allVeh[i])
+                        return GetEntityCoords(el)
                     end
                 end
             end
-            return vec3(pos.x, pos.y, pos.z)
+            return vector3(pos.x, pos.y, pos.z)
         end
     end
 end)
@@ -435,7 +436,7 @@ RegisterServerEvent('mono_garage:ImpoundJoB', function(plate, impound, price, re
                 for entity, plate2 in pairs(vehiculoCreado) do
                     if plate2 == plate then
                         DeleteVehicleByPlate(plate)
-                        --vehiculoCreado[entity] = nil
+                        vehiculoCreado[entity] = nil
                     end
                 end
                 TriggerClientEvent('mono_garage:Notification', source, locale('impfunc_noti', plate, impound))
