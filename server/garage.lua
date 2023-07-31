@@ -8,9 +8,9 @@ function SP(plate)
     return string.gsub(plate, "^%s*(.-)%s*$", "%1")
 end
 
-function CrearVehiculo(model, coords, heading, props)
+local function CrearVehiculo(model, coords, heading, props)
     if not props then
-        print("[MONO GARAGE]: Cant create a vehicle without props\n check the DB")
+        print("^2 [MONO GARAGE]: Cant create a vehicle without props\n check the DB")
         return
     end
     local vehicle = CreateVehicleServerSetter(model, "automobile", coords.x, coords.y, coords.z, heading)
@@ -29,7 +29,7 @@ end
 
 AddEventHandler('entityRemoved', function(entity)
     local tipo = GetEntityType(entity)
-    if tipo == 2 then
+    if tipo == 2 and vehiculoCreado[entity] then
         vehiculoCreado[entity] = nil
     end
 end)
@@ -681,98 +681,98 @@ end
     end
 end)]]
 
-if Garage.Persistent then
-    RegisterNetEvent('esx:playerLoaded', function(player, xPlayer, isNew)
-        if xPlayer then
-            local results = MySQL.query.await("SELECT * FROM mono_garage WHERE owner = ?", { xPlayer.getIdentifier() })
-            if results[1] ~= nil then
-                for i = 1, #results do
-                    local result = results[i]
-                    local veh = json.decode(result.vehicle)
-                    if result.calle == 1 and result.stored == 2 then
-                        local pos = json.decode(result.lastposition)
-                        if pos ~= nil then
-                            local plate = veh.plate
-                            local model = veh.model
-                            local coords = vector3(pos.x, pos.y, pos.z)
-                            local Heading = pos.h
-                            if not vehiclesSpawned[plate] then
-                                vehiclesSpawned[plate] = true
-                                while true do
-                                    local Ped = GetPlayerPed(player)
-                                    local coordsped = GetEntityCoords(Ped)
-                                    local distance = #(coordsped - coords)
-                                    Wait(0)
-                                    if distance < 500 then
-                                        local vehicle = CrearVehiculo(model, coords, Heading, veh)
-                                        SetVehicleDoorsLocked(vehicle, pos.doors)
-                                        MySQL.update(
-                                            'UPDATE mono_garage SET `stored` = ?, lastposition = ?  WHERE plate = ?',
-                                            { 0, nil, plate, })
-                                        break
-                                    else
-                                        if Garage.Debug.Prints then
-                                            print('^2 Distance to vehicle spawn :' .. distance)
-                                        end
-                                    end
-                                end
+-- if Garage.Persistent then
+--     RegisterNetEvent('esx:playerLoaded', function(player, xPlayer, isNew)
+--         if xPlayer then
+--             local results = MySQL.query.await("SELECT * FROM mono_garage WHERE owner = ?", { xPlayer.getIdentifier() })
+--             if results[1] ~= nil then
+--                 for i = 1, #results do
+--                     local result = results[i]
+--                     local veh = json.decode(result.vehicle)
+--                     if result.calle == 1 and result.stored == 2 then
+--                         local pos = json.decode(result.lastposition)
+--                         if pos ~= nil then
+--                             local plate = veh.plate
+--                             local model = veh.model
+--                             local coords = vector3(pos.x, pos.y, pos.z)
+--                             local Heading = pos.h
+--                             if not vehiclesSpawned[plate] then
+--                                 vehiclesSpawned[plate] = true
+--                                 while true do
+--                                     local Ped = GetPlayerPed(player)
+--                                     local coordsped = GetEntityCoords(Ped)
+--                                     local distance = #(coordsped - coords)
+--                                     Wait(0)
+--                                     if distance < 500 then
+--                                         local vehicle = CrearVehiculo(model, coords, Heading, veh)
+--                                         SetVehicleDoorsLocked(vehicle, pos.doors)
+--                                         MySQL.update(
+--                                             'UPDATE mono_garage SET `stored` = ?, lastposition = ?  WHERE plate = ?',
+--                                             { 0, nil, plate, })
+--                                         break
+--                                     else
+--                                         if Garage.Debug.Prints then
+--                                             print('^2 Distance to vehicle spawn :' .. distance)
+--                                         end
+--                                     end
+--                                 end
 
-                                if Garage.Debug.Persistent then
-                                    print('^2 Vehicle Spawn, Plate: ' ..
-                                        plate .. ', Coords' ..
-                                        coords .. ', Doors:' .. pos.doors .. ', ( 0 = open / 2 close))')
-                                end
-                                vehiclesSpawned[plate] = true
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end)
+--                                 if Garage.Debug.Persistent then
+--                                     print('^2 Vehicle Spawn, Plate: ' ..
+--                                         plate .. ', Coords' ..
+--                                         coords .. ', Doors:' .. pos.doors .. ', ( 0 = open / 2 close))')
+--                                 end
+--                                 vehiclesSpawned[plate] = true
+--                             end
+--                         end
+--                     end
+--                 end
+--             end
+--         end
+--     end)
 
-    RegisterNetEvent('esx:playerDropped', function(source)
-        local xPlayer = ESX.GetPlayerFromId(source)
-        local vehicles = MySQL.query.await("SELECT * FROM mono_garage")
-        for i = 1, #vehicles do
-            local data = vehicles[i]
-            if data.owner == xPlayer.getIdentifier() then
-                for entity, plate in pairs(vehiculoCreado) do
-                    if data.plate == plate then
-                        if data.calle == 1 then
-                            local position = GetEntityCoords(entity)
-                            local heading = GetEntityHeading(entity)
-                            local doorLockStatus = GetVehicleDoorLockStatus(entity)
-                            local posTable = {
-                                x = position.x,
-                                y = position.y,
-                                z = position.z,
-                                h = heading,
-                                doors = doorLockStatus
-                            }
-                            local posStr = json.encode(posTable)
-                            MySQL.update(
-                                'UPDATE mono_garage SET lastposition = ?, `stored` = 2 WHERE plate = ?',
-                                { posStr, plate },
-                                function()
-                                    vehiclesSpawned[plate] = false
-                                    DeleteEntity(entity)
-                                    --vehiculoCreado[entity] = nil
+--     RegisterNetEvent('esx:playerDropped', function(source)
+--         local xPlayer = ESX.GetPlayerFromId(source)
+--         local vehicles = MySQL.query.await("SELECT * FROM mono_garage")
+--         for i = 1, #vehicles do
+--             local data = vehicles[i]
+--             if data.owner == xPlayer.getIdentifier() then
+--                 for entity, plate in pairs(vehiculoCreado) do
+--                     if data.plate == plate then
+--                         if data.calle == 1 then
+--                             local position = GetEntityCoords(entity)
+--                             local heading = GetEntityHeading(entity)
+--                             local doorLockStatus = GetVehicleDoorLockStatus(entity)
+--                             local posTable = {
+--                                 x = position.x,
+--                                 y = position.y,
+--                                 z = position.z,
+--                                 h = heading,
+--                                 doors = doorLockStatus
+--                             }
+--                             local posStr = json.encode(posTable)
+--                             MySQL.update(
+--                                 'UPDATE mono_garage SET lastposition = ?, `stored` = 2 WHERE plate = ?',
+--                                 { posStr, plate },
+--                                 function()
+--                                     vehiclesSpawned[plate] = false
+--                                     DeleteEntity(entity)
+--                                     --vehiculoCreado[entity] = nil
 
-                                    if Garage.Debug.Persistent then
-                                        print('^2 Vehicle Save, Plate: ' ..
-                                            plate ..
-                                            ', Coords' ..
-                                            position .. ', Doors:' .. doorLockStatus .. ', ( 0 = open / 2 close))')
-                                    end
-                                end)
-                        end
-                    end
-                end
-            end
-        end
-    end)
-end
+--                                     if Garage.Debug.Persistent then
+--                                         print('^2 Vehicle Save, Plate: ' ..
+--                                             plate ..
+--                                             ', Coords' ..
+--                                             position .. ', Doors:' .. doorLockStatus .. ', ( 0 = open / 2 close))')
+--                                     end
+--                                 end)
+--                         end
+--                     end
+--                 end
+--             end
+--         end
+--     end)
+-- end
 
 
 
