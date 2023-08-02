@@ -15,9 +15,9 @@ if Garage.Mono_Carkeys then
     
     RegisterServerEvent('mono_carkeys:BuyKeys', function(plate, precio)
         local source = source
-        local xPlayer = ESX.GetPlayerFromId(source)
+        local _,bank = Framework.Functions.GetMoney(source)
         if ox_inventory:CanCarryItem(source, Keys.ItemName, 1) then
-            if xPlayer.getMoney() >= precio then
+            if bank >= precio then
                 exports.ox_inventory:RemoveItem(source, 'money', precio)
                 ox_inventory:AddItem(source, Keys.ItemName, 1,
                     { plate = plate, description = locale('key_description', plate) })
@@ -31,8 +31,7 @@ if Garage.Mono_Carkeys then
     end)
 
     lib.callback.register('mono_carkeys:getVehicles', function(source)
-        local xPlayer = ESX.GetPlayerFromId(source)
-        local identifier = xPlayer.getIdentifier()
+        local identifier = Framework.Functions.GetPlayerID(source)
         local vehicles = {}
 
         local results = MySQL.Sync.fetchAll("SELECT * FROM owned_vehicles WHERE owner = @identifier", {
@@ -59,8 +58,7 @@ if Garage.Mono_Carkeys then
 
     RegisterServerEvent('mono_carkeys:SetMatriculaServer', function(oldPlate, newPlate, entity, color)
         local source = source
-        local xPlayer = ESX.GetPlayerFromId(source)
-        local identifier = xPlayer.identifier
+        local identifier = Framework.Functions.GetPlayerID(source)
 
         MySQL.query("SELECT * FROM owned_vehicles WHERE owner = ? AND plate = ?", { identifier, newPlate },
             function(result)
