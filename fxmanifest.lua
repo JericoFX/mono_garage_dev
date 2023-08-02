@@ -16,7 +16,7 @@ author 'Discord ID & Link & tebex : symbiote_  ,  https://discord.gg/Vk7eY8xYV2 
 shared_scripts {
     '@ox_lib/init.lua',
     --  '@mono_lib/extras.lua',
-    'Config/*.lua',
+    'config/*.lua',
 }
 
 
