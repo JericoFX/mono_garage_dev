@@ -45,7 +45,7 @@ function Framework:Init()
             infoimpound = "infoimpound",
         }
         Framework.CoreName = "esx"
-        require "server.data.framework.qb"
+        require "server.data.framework.esx"
         print("IS ESX")
     end
 end
