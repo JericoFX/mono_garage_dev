@@ -22,7 +22,7 @@ RegisterCommand(Garage.NpcImpound.Command, function()
     local trabajo = false
     local noti = false
     for k, v in pairs(Garage.NpcImpound.jobs) do
-        if ESX.PlayerData.job.name == v then
+        if Framework.Functions.GetJob() == v then
             trabajo = true
             local entity, coords = lib.getClosestVehicle(cache.coords, 3.0, true)
             local veh = { coords = coords, entity = entity, job = v }
