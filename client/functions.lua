@@ -97,7 +97,7 @@ exports('GetTotalKm', GetTotalKm)]]
 -- Save Vehicle
 
 function SaveVehicle(data)
-    if data.distance == nil or data.distance > 5 then
+    if data.distance == nil or data.distance >= 5 then
         data.distance = 2.5
     end
     local vehicle = lib.getClosestVehicle(cache.coords, data.distance, true)
